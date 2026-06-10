@@ -15,8 +15,8 @@ COPY packages ./packages
 COPY extensions ./extensions
 
 RUN NODE_OPTIONS=--max-old-space-size=2048 pnpm install --frozen-lockfile \
-   --config.supportedArchitectures.os=linux \
-   --config.supportedArchitectures.libc=glibc
+    --config.supportedArchitectures.os=linux \
+    --config.supportedArchitectures.libc=glibc
 
 COPY . .
 
@@ -24,12 +24,15 @@ RUN pnpm build:docker || true
 RUN pnpm ui:build || true
 
 RUN ln -sf /app/openclaw.mjs /usr/local/bin/openclaw \
-&& chmod 755 /app/openclaw.mjs
+ && chmod 755 /app/openclaw.mjs
 
 ENV NODE_ENV=production
+ENV PORT=18789
 
-HEALTHCHECK --interval=3m --timeout=10s --start-period=15s --retries=3 \
- CMD node -e "fetch('http://127.0.0.1:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+EXPOSE 18789
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
+  CMD node -e "fetch('http://0.0.0.0:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 ENTRYPOINT ["tini", "-s", "--"]
-CMD ["node", "openclaw.mjs", "gateway"]
+CMD ["node", "openclaw.mjs", "gateway", "--bind", "lan"]
