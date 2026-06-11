@@ -206,16 +206,15 @@ RUN install -d -m 0755 -o node -g node /home/node/.config && \
       /home/node/.openclaw/workspace \
       /home/node/.config/openclaw
 
-# Entrypoint script — runs after volume mount, writes config before gateway starts
-COPY --chown=root:root entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
 ENV NODE_ENV=production
+
+RUN echo '{"gateway":{"mode":"local"},"gateway.controlui.allowedOrigins":["https://openclaw-production-d1f7.up.railway.app"]}' > /home/node/.openclaw/openclaw.json && \
+    chown node:node /home/node/.openclaw/openclaw.json
 
 USER node
 
 HEALTHCHECK --interval=3m --timeout=10s --start-period=15s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["tini", "-s", "--"]
 CMD ["node", "openclaw.mjs", "gateway", "--allow-unconfigured", "--bind", "lan", "--port", "18789"]
