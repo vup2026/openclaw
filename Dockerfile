@@ -313,7 +313,8 @@ ENV NODE_ENV=production
 # The node:24-bookworm image includes a 'node' user (uid 1000)
 # This reduces the attack surface by preventing container escape via root privileges
 USER node
-
+RUN echo '{"gateway":{"mode":"local"}}' > /home/node/.openclaw/openclaw.json && \
+    chown node:node /home/node/.openclaw/openclaw.json
 # Start gateway server with default config.
 # Binds to loopback (127.0.0.1) by default for security.
 #
