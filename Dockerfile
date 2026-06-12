@@ -208,7 +208,7 @@ RUN install -d -m 0755 -o node -g node /home/node/.config && \
 
 ENV NODE_ENV=production
 
-RUN echo '{"gateway":{"mode":"local"},"gateway.controlui.allowedOrigins":["https://openclaw-production-d1f7.up.railway.app"]}' > /home/node/.openclaw/openclaw.json && \
+RUN node -e "const fs=require('fs');const cfg={gateway:{mode:'local'},'gateway.controlui.allowedOrigins':['https://openclaw-production-d1f7.up.railway.app']};fs.writeFileSync('/home/node/.openclaw/openclaw.json',JSON.stringify(cfg,null,2));" && \
     chown node:node /home/node/.openclaw/openclaw.json
 
 USER node
